@@ -1,0 +1,28 @@
+# 统一换行符，避免 Windows/Linux 协作时整文件 diff
+* text=auto eol=lf
+
+# Windows 批处理必须保持 CRLF，否则可能无法执行
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不做换行转换
+*.xlsx binary
+*.xls  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+
+# 语言统计（让 GitHub 正确识别项目构成）
+*.ts   linguist-language=TypeScript
+*.tsx  linguist-language=TypeScript
+*.py   linguist-language=Python
+
+# 生成物不计入语言统计
+if-simulator/dist/** linguist-generated=true
+if-simulator/package-lock.json linguist-generated=true
+.analysis/hltv_fixtures/** linguist-generated=true

@@ -1,0 +1,115 @@
+{
+  "fitted_at": "2026-10-13 12:00:23",
+  "xlsx": "CS2选手排名数据_20261013_111843.xlsx",
+  "train_years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "mvp_fallback": "all",
+  "min_maps": 10,
+  "seed": 42,
+  "params": {
+    "Wp": 0.4583,
+    "Wh": 0.4552,
+    "Wt": 0.0135,
+    "Ws": 0.0731,
+    "wr": 0.5649,
+    "wk": 0.1469,
+    "wa": 0.0142,
+    "wi": 0.1093,
+    "wwr": 0.1647,
+    "w1": 0.2864,
+    "w2": 0.5554,
+    "w3": 0.1582,
+    "evp_ratio": 0.4953,
+    "v_champ": 9.1957,
+    "v_runner": 0.1517,
+    "v_semi": 0.5116,
+    "v_quarter": 2.2358,
+    "m_major": 1.5941,
+    "m_super": 1.4631
+  },
+  "component_weights": {
+    "Wp": 0.458,
+    "Wh": 0.455,
+    "Wt": 0.013,
+    "Ws": 0.073
+  },
+  "train_spearman": 0.881,
+  "train_mae": 2.07,
+  "per_year": [
+    {
+      "year": 2021,
+      "n_officials": 20,
+      "n_with_data": 20,
+      "spearman": 0.886,
+      "mae": 2.0,
+      "top5_overlap": 4
+    },
+    {
+      "year": 2022,
+      "n_officials": 20,
+      "n_with_data": 20,
+      "spearman": 0.848,
+      "mae": 2.5,
+      "top5_overlap": 4
+    },
+    {
+      "year": 2023,
+      "n_officials": 20,
+      "n_with_data": 20,
+      "spearman": 0.906,
+      "mae": 1.75,
+      "top5_overlap": 5
+    },
+    {
+      "year": 2024,
+      "n_officials": 20,
+      "n_with_data": 20,
+      "spearman": 0.907,
+      "mae": 1.9,
+      "top5_overlap": 4
+    },
+    {
+      "year": 2025,
+      "n_officials": 20,
+      "n_with_data": 20,
+      "spearman": 0.86,
+      "mae": 2.2,
+      "top5_overlap": 5
+    }
+  ],
+  "loyo": [
+    {
+      "year": 2021,
+      "spearman": 0.833,
+      "mae": 2.5
+    },
+    {
+      "year": 2022,
+      "spearman": 0.729,
+      "mae": 3.5
+    },
+    {
+      "year": 2023,
+      "spearman": 0.641,
+      "mae": 3.6
+    },
+    {
+      "year": 2024,
+      "spearman": 0.646,
+      "mae": 2.75
+    },
+    {
+      "year": 2025,
+      "spearman": 0.812,
+      "mae": 2.5
+    }
+  ],
+  "loyo_spearman_mean": 0.732,
+  "loyo_spearman_std": 0.08,
+  "loyo_mae_mean": 2.97
+}

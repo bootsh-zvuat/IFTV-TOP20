@@ -1,0 +1,45 @@
+# ---- Node / 前端 ----
+node_modules/
+dist-verify/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# dist/ 是预构建产物，便携启动器依赖它，故**保留提交**
+# 若希望改为 CI 构建，取消下面一行的注释
+# dist/
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- 数据备份（体积大且无价值）----
+*.bak
+*.tmp
+
+# ---- 会话/工具残留 ----
+.acl-recovery/
+.trae/
+logs/
+.analysis/edge_*/
+.analysis/chrome_*/
+.analysis/hltv_test*.xlsx
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 本地凭据（切勿提交）----
+.env
+.env.*
+*.pem
+*.key
+credentials.json

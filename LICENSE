@@ -1,0 +1,42 @@
+MIT License
+
+Copyright (c) 2026 IFTV contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 数据来源与合规说明
+
+本项目的统计数据来自第三方公开接口，仅用于技术研究与学习：
+
+- **完美世界电竞**（data.wanmei.com）— Rating 3.0 口径，对齐 HLTV
+- **5EPlay**（5eplay.com）— 多维度统计
+- **HLTV**（hltv.org）— 对手强度（vs Top-N Rating）
+
+关于 HLTV 数据采集（`fetch_hltv_opponents.py`）：
+
+- 使用**真实浏览器**（Edge + CDP）访问公开页面，由浏览器自身完成
+  Cloudflare 的 JS 挑战，脚本仅读取已渲染的内容，**不绕过任何访问控制**
+- 采集频率低（每人 1 次请求），仅获取公开的选手统计数据，
+  不涉及登录态或非公开内容
+- 请遵守各站点的服务条款与 robots 规则；如需大量采集请先征得授权
+
+CS2 及 Counter-Strike 是 Valve Corporation 的商标。
+本项目与 Valve、HLTV、完美世界、5EPlay 均无隶属关系。
