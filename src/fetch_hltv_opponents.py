@@ -30,7 +30,9 @@ import re
 import sys
 import time
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".analysis"))
+# 项目根 = src/ 的上一级；cdp_client.py 在根目录的 .analysis/ 下
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, ".analysis"))
 from cdp_client import WS, cdp_get  # noqa: E402
 
 try:
@@ -164,8 +166,7 @@ def _num(s):
 # ---------- 选手清单 ----------
 def load_top20(year):
     """从 baseline xlsx 读该年 Top20 的 (选手名, 选手ID)"""
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "data", f"if_sim_{year}_baseline.xlsx")
+    path = os.path.join(ROOT, "data", f"if_sim_{year}_baseline.xlsx")
     if not os.path.exists(path):
         return []
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)

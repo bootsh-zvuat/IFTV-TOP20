@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """探查5：5E bundle 中的 mfilter/数据 API 路径 + tt_series 选项来源"""
 import re
+import os
 import sys
 
-sys.path.insert(0, r"d:\demo\iftv")
+# 让 tools/ 下的脚本能导入 ../src/ 的模块（相对本文件，跨机器可用）
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 from crawler import request_get, HEADERS_5E, log
 
 js = request_get("https://event.5eplay.com/static/js/index.bundle.126be0c21629a196e62f.js",

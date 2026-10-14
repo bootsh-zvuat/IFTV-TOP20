@@ -6,7 +6,8 @@ import glob
 from collections import defaultdict
 import openpyxl
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+# 项目根 = src/ 的上一级（data/ 与 if-simulator/ 都在根目录下）
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 YEARS = [2024, 2025]
 OUT = os.path.join(BASE, "if-simulator", "scripts", "verify-data.json")
 

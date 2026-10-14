@@ -29,10 +29,10 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from crawler import wm_get, ms_to_date, log
 
-OUT_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "data", "team_placements.json")
-TEAM_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          "data", "team_career_cache.json")
+# 项目根 = src/ 的上一级
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT_JSON = os.path.join(ROOT, "data", "team_placements.json")
+TEAM_CACHE = os.path.join(ROOT, "data", "team_career_cache.json")
 SLEEP = 0.35
 SLEEP_TEAM = 0.8          # team/career 限速更敏感，加大间隔
 

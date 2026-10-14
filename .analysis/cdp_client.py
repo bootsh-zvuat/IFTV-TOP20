@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 鐢?Edge 鍐呯疆 CDP 椹卞姩鐪熷疄娴忚鍣ㄦ姄鍙?HLTV 閫夋墜椤碉紙闆剁涓夋柟渚濊禆锛夈€?
 鍘熺悊锛?  Edge 鍩轰簬 Chromium锛屾敮鎸?--remote-debugging-port銆?  閫氳繃 CDP锛圕hrome DevTools Protocol锛夊彲浠ワ細

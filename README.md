@@ -121,9 +121,9 @@ flowchart LR
     end
 
     subgraph PIPE["采集与生成 (Python)"]
-        CR["crawler.py<br/>HMAC 签名 + 分页"]
-        GEN["gen_if_data_<year>.py<br/>逐赛事聚合 → Excel"]
-        FIT["fit_ranking.py<br/>差分进化拟合"]
+        CR["src/crawler.py<br/>HMAC 签名 + 分页"]
+        GEN["src/gen_if_data_*.py<br/>逐赛事聚合 → Excel"]
+        FIT["src/fit_ranking.py<br/>差分进化拟合"]
     end
 
     subgraph APP["模拟器 (React + TS)"]
@@ -149,8 +149,8 @@ flowchart LR
 
 | 组件 | 入口 | 职责 |
 |---|---|---|
-| 数据采集 | `crawler.py` | 完美世界（HMAC 签名）+ 5EPlay 双源采集 |
-| 参数拟合 | `fit_ranking.py` | 差分进化拟合评分公式 + 留一年验证 |
+| 数据采集 | `src/crawler.py` | 完美世界（HMAC 签名）+ 5EPlay 双源采集 |
+| 参数拟合 | `src/fit_ranking.py` | 差分进化拟合评分公式 + 留一年验证 |
 | If 线模拟器 | `if-simulator/` | 纯前端排名重算与对比 |
 
 ---
@@ -256,20 +256,31 @@ IFTV-TOP20/
 ├── 启动模拟器.bat            # ← 双击即用（GBK 编码，勿转存 UTF-8）
 ├── serve.py / serve.js       # 便携静态服务器（无第三方依赖）
 │
-├── crawler.py                # 采集器：完美世界 + 5EPlay
-├── gen_if_data_2025.py       # 赛事 Excel 生成（模拟器导入格式）
-├── fit_ranking.py            # 参数拟合（差分进化 + 留一年验证）
-├── fetch_hltv_opponents.py   # HLTV 对手强度采集（真实浏览器 + CDP）
-├── parse_hltv_html.py        # HLTV 手工导出页解析（备选方案）
+├── src/                      # 数据采集与拟合（生产链路）
+│   ├── crawler.py            # 采集器：完美世界 + 5EPlay
+│   ├── gen_if_data_2025.py   # 赛事 Excel 生成（模拟器导入格式）
+│   ├── gen_verify_data.py    # 校验数据生成
+│   ├── fit_ranking.py        # 参数拟合（差分进化 + 留一年验证）
+│   ├── collect_team_placements.py  # 战队口径名次采集
+│   ├── fetch_hltv_opponents.py     # HLTV 对手强度采集（真实浏览器 + CDP）
+│   └── parse_hltv_html.py    # HLTV 手工导出页解析（备选方案）
 ├── fitted_params.json        # 拟合结果（2021-2025）
 │
+├── tools/                    # 一次性探查与辅助脚本（历史留档）
+│   ├── probe_*.py            # API 结构探查（6 个）
+│   └── analyze_placements.py # 名次覆盖率分析
+│
 ├── data/                     # 数据集与基准
+├── docs/                     # README 用界面截图
 ├── if-simulator/             # 模拟器源码 + dist 预构建产物
 │   ├── src/core/             # 算法纯函数（score / ranking / evp / scenario）
 │   ├── src/config/defaults.ts# 全部默认权重
 │   └── dist/                 # 已构建，便携启动器直接使用
 └── .analysis/                # 诊断报告与验证脚本
 ```
+
+> 脚本已归类到 `src/` 与 `tools/`，所有路径都用相对于脚本自身的写法推算，
+> clone 到任意位置都能直接运行（不再依赖 `d:\demo\iftv` 这类绝对路径）。
 
 ### 数据文件
 
@@ -301,8 +312,8 @@ IFTV-TOP20/
 ```bash
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe crawler.py            # 全量采集
-.venv\Scripts\python.exe gen_if_data_2025.py   # 生成模拟器导入用 Excel
+.venv\Scripts\python.exe src\crawler.py            # 全量采集
+.venv\Scripts\python.exe src\gen_if_data_2025.py   # 生成模拟器导入用 Excel
 ```
 
 ### HLTV 对手强度（真实浏览器 + CDP）
@@ -317,7 +328,7 @@ hltv.org 由 Cloudflare 保护（JS Challenge），纯 HTTP 客户端与 headles
   --disable-blink-features=AutomationControlled about:blank
 
 # 2. 采集
-.venv\Scripts\python.exe fetch_hltv_opponents.py --year 2025 --out data\hltv_opponent_2025.xlsx
+.venv\Scripts\python.exe src\fetch_hltv_opponents.py --year 2025 --out data\hltv_opponent_2025.xlsx
 ```
 
 > 端口默认 `9411`（`9333` 常被华硕 Armoury Crate 占用）。
@@ -350,7 +361,7 @@ hltv.org 由 Cloudflare 保护（JS Challenge），纯 HTTP 客户端与 headles
 - **5EPlay**（5eplay.com）— 多维度统计
 - **HLTV**（hltv.org）— 对手强度（vs Top-N Rating）
 
-关于 HLTV 采集（`fetch_hltv_opponents.py`）：
+关于 HLTV 采集（`src/fetch_hltv_opponents.py`）：
 
 - 使用**真实浏览器**访问公开页面，由浏览器自身完成 Cloudflare 的 JS 挑战，
   脚本仅读取已渲染的内容，**不绕过任何访问控制**

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """探查7：calender/eventList 与 getMatchList 结构"""
 import json
+import os
 import sys
 import time
 
-sys.path.insert(0, r"d:\demo\iftv")
+# 让 tools/ 下的脚本能导入 ../src/ 的模块（相对本文件，跨机器可用）
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 from crawler import wm_get, log
 
 # 1. calender/eventList 各种参数

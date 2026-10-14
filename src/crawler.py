@@ -539,7 +539,8 @@ def write_sheet(wb, title, rows, note=None):
 
 
 def save_excel(sheets):
-    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    # 项目根 = src/ 的上一级（脚本从根目录移动过，不能再假设 __file__ 同级就是根）
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
     try:
         os.makedirs(out_dir, exist_ok=True)
     except OSError as e:

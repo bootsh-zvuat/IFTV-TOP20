@@ -42,7 +42,7 @@ https://www.hltv.org/stats/players/11893/ZywOo?startDate=2025-01-01&endDate=2025
 ```
 
 > 选手 ID 可以从 `data/if_sim_2025_baseline.xlsx` 的「选手ID」列取，
-> 或用 `crawler.py` 的 `/player/top20` 接口拿（那套 id 与 HLTV URL 一致）。
+> 或用 `src/crawler.py` 的 `/player/top20` 接口拿（那套 id 与 HLTV URL 一致）。
 
 页面加载完成后按 **Ctrl+S**：
 
@@ -59,7 +59,7 @@ https://www.hltv.org/stats/players/11893/ZywOo?startDate=2025-01-01&endDate=2025
 ### 3. 解析
 
 ```powershell
-.venv\Scripts\python.exe parse_hltv_html.py `
+.venv\Scripts\python.exe src\parse_hltv_html.py `
   --html-dir data\hltv_html\2025 `
   --year 2025 `
   --out data\hltv_opponent_2025.xlsx
@@ -68,7 +68,7 @@ https://www.hltv.org/stats/players/11893/ZywOo?startDate=2025-01-01&endDate=2025
 **若某些文件解析失败**，加 `--dump` 打印实际可见文本：
 
 ```powershell
-.venv\Scripts\python.exe parse_hltv_html.py `
+.venv\Scripts\python.exe src\parse_hltv_html.py `
   --html-dir data\hltv_html\2025 --year 2025 `
   --out data\hltv_opponent_2025.xlsx --dump --dump-lines 120
 ```
@@ -124,7 +124,7 @@ https://www.hltv.org/stats/players/11893/ZywOo?startDate=2025-01-01&endDate=2025
 
 1. 把 `hltv_opponent_YYYY.xlsx` 的 vsTopN 列**按选手名 join** 到
    `if_sim_YYYY_events.xlsx`（注意是选手名，不是选手ID ——
-   两个数据源的 ID 命名空间不同，见 `gen_if_data_2025.py` 的注释）。
+   两个数据源的 ID 命名空间不同，见 `src/gen_if_data_2025.py` 的注释）。
 2. 在 `score.ts` 增加对手强度通道，用 2024/2025 两年做**跨年验证**。
    **必须两年都改善才可采纳** —— 这是前 10 轮反复踩到的坑：
    单年调优极易过拟合（中段仅 14 人/年）。

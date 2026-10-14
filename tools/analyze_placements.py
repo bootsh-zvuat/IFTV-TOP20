@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """分析：重新按正确口径校验覆盖率 + 冠军清单 + 疑点核查"""
 import json
+import os
 import re
 from collections import defaultdict
 
-D = json.load(open(r"d:\demo\iftv\data\team_placements.json", encoding="utf-8"))
+# 项目根 = tools/ 的上一级（相对本文件，跨机器可用）
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+D = json.load(open(os.path.join(ROOT, "data", "team_placements.json"), encoding="utf-8"))
 QUALIFIER_RE = re.compile(
     r"预选|资格|入围|封闭|海选|quarterfinal[s]? *qual|qualifier|qualification|"
     r"play[- ]?in|closed|RMR|showdown|小组赛|groups|play-in|open qual",

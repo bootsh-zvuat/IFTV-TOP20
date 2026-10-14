@@ -22,6 +22,15 @@ __pycache__/
 *.bak
 *.tmp
 
+# ---- Office 临时/锁文件 ----
+# Excel 打开文件时会生成 ~$xxx.xlsx 锁文件，不是数据
+~$*
+*.~lock.*
+
+# ---- 运行时产物 ----
+src/__pycache__/
+tools/__pycache__/
+
 # ---- 会话/工具残留 ----
 .acl-recovery/
 .trae/

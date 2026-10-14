@@ -39,7 +39,8 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--year", type=int, default=2025)
 YEAR = _ap.parse_known_args()[0].year
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+# 项目根 = src/ 的上一级（data/ 与采集 Excel 都在根目录下）
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 各年份 eventId 扫描区间（KNOWN_EVENT_IDS 为空时才扫描）
 ID_RANGES = {
     2024: range(6000, 7905),

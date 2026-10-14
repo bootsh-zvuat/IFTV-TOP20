@@ -39,7 +39,8 @@ except ImportError:
     sys.exit(1)
 
 # ---------- 配置 ----------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 项目根 = src/ 的上一级（fitted_params.json 输出到根目录，data/ 也在根目录下）
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MIN_MAPS = 10                    # 纳入归一化池的最低地图数
 EVP_YEAR_START = 2020            # 完美 career 的逐赛事 MVP/EVP 仅 2020+ 有数据
 TEAM_PLACE_YEAR_START = 2021     # 战队口径名次数据（含冠军）从此年起生效
