@@ -40,7 +40,10 @@ export default function SettingsPage() {
   };
 
   const onSave = async () => {
-    await saveWeights(cfg);
+    // 档位顺序不影响计算（取命中档的最高/最重分），保存时再按阈值排好，避免输入过程中整行跳动
+    const sorted = { ...cfg, ratingTiers: [...cfg.ratingTiers].sort((a, b) => b.threshold - a.threshold) };
+    setCfg(sorted);
+    await saveWeights(sorted);
     setSaved(true);
   };
 
@@ -90,8 +93,9 @@ export default function SettingsPage() {
         </p>
         <p className="mt-2 text-xs text-amber-400/80">
           注意：拟合模型是「年度聚合 z-score」结构，与本模拟器的「逐赛事加和」结构不同，
-          只有比例关系可移植。实测「拟合校准」预设的中段（7-20 名）精度低于「经验默认」，
-          其价值在于贴近拟合口径，而非提升逐名次准确度。
+          只有比例关系可移植。实测两套预设各有胜负：「拟合校准」前 6 名两年都更准
+          （MAE 0.00 / 0.67，经验默认为 0.17 / 1.00），2024 年中段也更准（4.86 对 5.21）；
+          2025 年中段则是「经验默认」更准（4.64 对 4.93）。
         </p>
       </section>
 
@@ -154,7 +158,7 @@ export default function SettingsPage() {
       <section className="rounded-lg border border-slate-700 bg-slate-800 p-4">
         <h3 className="mb-1 font-semibold">Rating 分档加分</h3>
         <p className="mb-3 text-xs text-slate-400">
-          赛事 Rating 达到阈值即加对应分（取命中的最高档）；带「&lt;」的为负分档，低于阈值即扣分。按阈值从高到低排列。
+          赛事 Rating 达到阈值即加对应分（取命中的最高档）；带「&lt;」的为负分档，低于阈值即扣分。保存时按阈值从高到低排列。
         </p>
         <div className="space-y-2">
           {cfg.ratingTiers.map((tier, i) => (
@@ -165,13 +169,7 @@ export default function SettingsPage() {
                 <NumInput
                   value={tier.threshold}
                   step={0.05}
-                  onChange={(v) =>
-                    update((c) => {
-                      c.ratingTiers[i].threshold = v;
-                      c.ratingTiers.sort((a, b) => b.threshold - a.threshold);
-                      return c;
-                    })
-                  }
+                  onChange={(v) => update((c) => ((c.ratingTiers[i].threshold = v), c))}
                 />
               </label>
               <label className="flex items-center gap-1">

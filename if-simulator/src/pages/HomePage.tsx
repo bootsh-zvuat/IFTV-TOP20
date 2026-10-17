@@ -37,6 +37,12 @@ export default function HomePage() {
   };
 
   const onLoadSample = async () => {
+    if (
+      years.includes(SAMPLE_YEAR) &&
+      !window.confirm(`示例数据会替换已导入的 ${SAMPLE_YEAR} 年赛事数据和 HLTV 基准，确定继续？`)
+    ) {
+      return;
+    }
     await replaceYearData([SAMPLE_YEAR], samplePlayers(), sampleEvents(), sampleResults());
     await db.baselines.put(sampleBaseline());
     setMsg('示例数据已加载（2025 年，40 名选手、5 个赛事）');
