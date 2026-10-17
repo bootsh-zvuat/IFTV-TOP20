@@ -6,7 +6,7 @@ CS2 选手排名数据采集器
   2. 5EPlay event.5eplay.com（自定义时间段 + 赛事等级的多维度榜单）
 输出：data/CS2选手排名数据_<时间戳>.xlsx（多工作表）
 
-运行：.venv\\Scripts\\python.exe crawler.py
+运行：.venv\\Scripts\\python.exe src\\crawler.py
 """
 import os
 import sys
@@ -497,6 +497,8 @@ def build_yearly_stats_rows(yearly_list):
 HEADER_FILL = PatternFill("solid", fgColor="305496")
 HEADER_FONT = Font(bold=True, color="FFFFFF")
 CENTER = Alignment(horizontal="center", vertical="center")
+# 名字类文本列：即使看起来像数字也保持字符串（例如选手 "910" 不能变成数字 910）
+TEXT_COLUMNS = {"选手", "战队", "赛事", "赛事名", "荣誉名称", "队友"}
 
 
 def write_sheet(wb, title, rows, note=None):
@@ -518,7 +520,7 @@ def write_sheet(wb, title, rows, note=None):
     for r, row in enumerate(rows, start_row + 1):
         for c, h in enumerate(headers, 1):
             v = row.get(h)
-            if isinstance(v, str):
+            if isinstance(v, str) and h not in TEXT_COLUMNS:
                 try:
                     v = float(v) if "." in v else int(v)
                 except ValueError:
