@@ -37,9 +37,9 @@ function opponentValue(r: EventResult, tier: WeightConfig['opponentTier']): numb
  *   - 正确做法是先做**年度 z-score 归一化**（横向对比同侪），再乘权重加到总分。
  *
  * 这正是拟合模型（fit_ranking.py）的做法 —— 该模型所有通道都先年度 z-score
- * 再加权。之前的失败尝试（FINDINGS-2/3）证明：在逐赛事加和结构里直接调参无效，
- * 而引入这个 z-score 通道是有效的（2024/2025 跨年验证，中段 MAE 4.57→3.86 /
- * 5.21→4.14，Top20 重叠 18/17→20/20）。
+ * 再加权。注意：早先"中段 MAE 4.57→3.86 / 5.21→4.14、重叠 20/20"的结论来自
+ * 有缺陷的原型，已作废；修正后的验证中该通道不能稳定改善中段，默认关闭
+ * （见 defaults.ts 的 opponentWeight 注释）。
  *
  * 无该数据的选手不参与归一化池，也不获得加分（不会因缺数据被系统性惩罚）。
  */
@@ -91,12 +91,15 @@ export function computeRanking(
   const eventMap = new Map(yearEvents.map((e) => [e.id, e]));
   const totals = new Map<string, number>();
   const mapsSum = new Map<string, number>();
+  // 结果按导入顺序（即赛事时间顺序）存放，最后一次出现的队伍就是年末所在队伍
+  const latestTeam = new Map<string, string>();
   let hasMapData = false;
   const minEventMaps = cfg.minEventMaps ?? 0;
 
   for (const r of results) {
     const ev = eventMap.get(r.eventId);
     if (!ev) continue;
+    if (r.team) latestTeam.set(r.playerId, r.team);
     if (typeof r.maps === 'number') hasMapData = true;
     // 单赛事图数不足 → 整条记录剔除（与网格搜索校准口径一致）
     if (typeof r.maps === 'number' && minEventMaps > 0 && r.maps < minEventMaps) continue;
@@ -124,7 +127,7 @@ export function computeRanking(
     entries.push({
       playerId,
       playerName: p?.name ?? playerId,
-      team: p?.team ?? '',
+      team: latestTeam.get(playerId) ?? p?.team ?? '',
       totalScore: Math.round(totalScore * 100) / 100,
       rank: 0,
     });

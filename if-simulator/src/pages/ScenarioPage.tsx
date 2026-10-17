@@ -29,7 +29,8 @@ export default function ScenarioPage() {
   // 表单状态
   const [newWinnerTeam, setNewWinnerTeam] = useState('');
   const [newMvpId, setNewMvpId] = useState('');
-  const [action, setAction] = useState<OriginalMvpAction>('保持MVP');
+  // 默认「降为EVP」：选了新 MVP 就生效；MVP 不变时该选项不影响结果
+  const [action, setAction] = useState<OriginalMvpAction>('降为EVP');
   const [mvpEvpRank, setMvpEvpRank] = useState<'' | '1' | '2' | '3'>('');
   const [evpMode, setEvpMode] = useState<'自动' | '手动'>('自动');
   const [manualEvp, setManualEvp] = useState<('' | string)[]>(['', '', '']);
@@ -48,17 +49,22 @@ export default function ScenarioPage() {
         const pmap = new Map(ps.map((p) => [p.id, p]));
         const champ = er.find((r) => r.teamPlacement === '冠军');
         const mvp = er.find((r) => r.honor === 'MVP');
-        if (champ) setNewWinnerTeam(pmap.get(champ.playerId)?.team ?? '');
+        if (champ) setNewWinnerTeam(champ.team || pmap.get(champ.playerId)?.team || '');
         if (mvp) setNewMvpId(mvp.playerId);
         setScenarioName(`${ev.name} If线`);
       }
     })();
   }, [eventId, year]);
 
-  const teams = useMemo(() => {
+  // 该赛事各选手所在队伍（旧数据无逐赛事队伍时回退到选手的年度队伍）
+  const teamOf = useMemo(() => {
     const pmap = new Map(players.map((p) => [p.id, p]));
-    return [...new Set(results.map((r) => pmap.get(r.playerId)?.team ?? ''))].filter(Boolean).sort();
-  }, [players, results]);
+    return (r: EventResult) => r.team || pmap.get(r.playerId)?.team || '';
+  }, [players]);
+  const teams = useMemo(
+    () => [...new Set(results.map(teamOf))].filter(Boolean).sort(),
+    [results, teamOf],
+  );
 
   const playerName = (pid: string) => players.find((p) => p.id === pid)?.name ?? pid;
 
@@ -66,9 +72,8 @@ export default function ScenarioPage() {
   const originalEvps = results
     .filter((r) => r.honor === 'EVP')
     .sort((a, b) => a.honorRank - b.honorRank);
-  const originalChampion = teams.find(
-    (t) => players.find((p) => p.id === results.find((r) => r.teamPlacement === '冠军')?.playerId)?.team === t,
-  );
+  const championRow = results.find((r) => r.teamPlacement === '冠军');
+  const originalChampion = championRow ? teamOf(championRow) : undefined;
 
   const scenario: IfScenario = useMemo(
     () => ({
@@ -187,10 +192,15 @@ export default function ScenarioPage() {
               </select>
             </label>
           )}
+          {action === '保持MVP' && originalMvp && newMvpId && newMvpId !== originalMvp.playerId && (
+            <p className="text-xs text-amber-400 sm:col-span-2">
+              原 MVP 处理方式为「保持MVP」时，新 MVP 不会生效；要改 MVP 请选择其他处理方式。
+            </p>
+          )}
           <label className="block text-sm">
             <span className="mb-1 block text-slate-300">EVP 分配方式</span>
             <select value={evpMode} onChange={(e) => setEvpMode(e.target.value as '自动' | '手动')} className={selCls + ' w-full'}>
-              <option value="自动">自动（按 Rating 重排淘汰赛选手）</option>
+              <option value="自动">自动（保留原 EVP，空位按 Rating 从淘汰赛选手补）</option>
               <option value="手动">手动指定</option>
             </select>
           </label>

@@ -62,12 +62,13 @@ export function sampleResults(): EventResult[] {
   const results: EventResult[] = [];
   for (const [ei, def] of EVENT_DEFS.entries()) {
     const eventId = `${YEAR}::${def.name}`;
-    const rows: { pid: string; placement: TeamPlacement; rating: number; adr: number }[] = [];
+    const rows: { pid: string; team: string; placement: TeamPlacement; rating: number; adr: number }[] = [];
     def.order.forEach((team, ti) => {
       for (const [name, base] of TEAMS[team]) {
         const rating = Math.round((base + jitter(ei * 100 + ti * 10 + name.length)) * 100) / 100;
         rows.push({
           pid: `${YEAR}::${name}`,
+          team,
           placement: PLACEMENT_SEQ[ti],
           rating,
           adr: Math.round((rating * 62 + jitter(ei + name.length)) * 10) / 10,
@@ -90,6 +91,7 @@ export function sampleResults(): EventResult[] {
       results.push({
         eventId,
         playerId: r.pid,
+        team: r.team,
         teamPlacement: r.placement,
         honor: isMvp ? 'MVP' : evpRank ? 'EVP' : '无',
         honorRank: isMvp ? 1 : evpRank ?? 0,

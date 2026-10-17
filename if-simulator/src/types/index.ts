@@ -34,6 +34,11 @@ export interface Event {
 export interface EventResult {
   eventId: string;
   playerId: string;
+  /**
+   * 该赛事中所在队伍（导入表的「队伍」列）。选手年内转会时与 Player.team 不同，
+   * 换冠军等逐赛事判断必须用它；旧版本导入的数据没有此字段，回退到 Player.team。
+   */
+  team?: string;
   teamPlacement: TeamPlacement;
   honor: HonorType;
   /** EVP 顺位 1/2/3；MVP 为 1；无荣誉为 0 */

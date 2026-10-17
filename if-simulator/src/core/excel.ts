@@ -97,6 +97,7 @@ export function buildData(rows: ImportedRow[]): ParsedData {
     results.push({
       eventId,
       playerId: pid,
+      team: r.team || undefined,
       teamPlacement: r.teamPlacement,
       honor: r.honor,
       honorRank: r.honor === 'MVP' ? 1 : r.honor === 'EVP' ? r.honorRank : 0,
