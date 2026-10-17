@@ -18,11 +18,11 @@ HLTV 对手强度采集器（通过 Edge CDP，零第三方依赖）。
   1. 启动 Edge（独立 profile，避免影响日常浏览）：
      "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" ^
        --remote-debugging-port=9411 ^
-       --user-data-dir="D:\\demo\\iftv\\.analysis\\edge_hltv_profile" ^
+       --user-data-dir="<项目目录>\\.analysis\\edge_hltv_profile" ^
        --disable-blink-features=AutomationControlled about:blank
 
   2. 运行：
-     .venv\\Scripts\\python.exe fetch_hltv_opponents.py --year 2025 --out data\\hltv_opponent_2025.xlsx
+     .venv\\Scripts\\python.exe src\\fetch_hltv_opponents.py --year 2025 --out data\\hltv_opponent_2025.xlsx
 """
 import argparse
 import os

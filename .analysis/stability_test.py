@@ -21,7 +21,7 @@ from collections import defaultdict
 import openpyxl
 import numpy as np
 
-BASE = r"D:\demo\iftv"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根 = .analysis/ 的上一级
 DATA = os.path.join(BASE, "data")
 EVENT_LEVEL_WEIGHTS = {
     "Major": 1.0, "超级精英赛": 0.8, "精英赛": 0.75,

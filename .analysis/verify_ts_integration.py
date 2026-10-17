@@ -20,7 +20,7 @@ from collections import defaultdict
 import openpyxl
 import numpy as np
 
-BASE = r"D:\demo\iftv"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根 = .analysis/ 的上一级
 DATA = os.path.join(BASE, "data")
 
 # ---- 与 src/config/defaults.ts 保持一致 ----

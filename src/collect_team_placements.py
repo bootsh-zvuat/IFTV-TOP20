@@ -16,7 +16,7 @@
   5. 覆盖率校验：选手生涯 2021-2025 非预选赛事件，是否被战队数据覆盖
 输出：data/team_placements.json
 
-运行：.venv\\Scripts\\python.exe collect_team_placements.py
+运行：.venv\\Scripts\\python.exe src\\collect_team_placements.py
 """
 import os
 import re
