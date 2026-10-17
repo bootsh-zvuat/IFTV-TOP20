@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/React-18-61dafb.svg" alt="React 18">
   <img src="https://img.shields.io/badge/TypeScript-5-3178c6.svg" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-5-646cff.svg" alt="Vite 5">
-  <img src="https://img.shields.io/badge/Python-3.9%2B-3776ab.svg" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776ab.svg" alt="Python">
 </p>
 
 ---
@@ -105,7 +105,8 @@ npm run dev          # http://localhost:5173
 | 「导入赛事数据 Excel」 | `data/if_sim_2025_events.xlsx` |
 | 「导入 HLTV 原版 Top20」 | `data/if_sim_2025_baseline.xlsx` |
 
-> 另有 2024 年两套文件，注意**导入会互相覆盖**。
+> 另有 2024 年两套文件。导入只替换文件里出现的年份，2024 与 2025 可以同时存在；
+> 注意「加载示例数据」会替换已导入的 2025 年数据（会先弹窗确认）。
 > 清空浏览器数据：控制台执行 `indexedDB.deleteDatabase('if-simulator')`。
 
 ---
@@ -139,7 +140,7 @@ flowchart LR
     CR --> GEN
     GEN -->|"Excel"| IMP
     CR -->|"训练数据"| FIT
-    FIT -.->|"fitted_params.json"| CORE
+    FIT -.->|"参数比例（手工移植为预设）"| CORE
     IMP --> DB
     DB --> CORE
     CORE --> UI
@@ -203,7 +204,7 @@ Major 1.00 · 超级精英赛 0.80 · 精英赛 0.75 · 大型赛事 0.65
 </table>
 
 - **数据规模**：2025 年 26 赛事 / 1735 行；2024 年 22 赛事 / 1567 行
-- **前 5 名两年全中**
+- **前 5 名**：2025 年与官方完全一致（含顺序）；2024 年命中 4 人（jL 官方第 5、模拟第 6）
 - 拟合模型（另一套结构）留一年验证：**Spearman 0.732 / MAE 2.97 名**
 
 ---
@@ -234,7 +235,7 @@ Major 1.00 · 超级精英赛 0.80 · 精英赛 0.75 · 大型赛事 0.65
 现有数据源难以完整提供。中段只有 14 人/年 × 2 年样本，任何调参都极易过拟合
 （第 8-9 轮就是活例：单年看着改善，跨年一测就崩）。
 
-**所以**：把模拟器用于**顶部 If 线分析**（前 6 名两年全中），
+**所以**：把模拟器用于**顶部 If 线分析**（前 6 名命中 2024 年 6/6、2025 年 5/6），
 中段名次当作参考值。
 
 > 完整的诊断过程、所有证伪实验与被推翻的中间结论，都保留在
@@ -244,8 +245,11 @@ Major 1.00 · 超级精英赛 0.80 · 精英赛 0.75 · 大型赛事 0.65
 ### 其它已知边界
 
 1. **两个数据源的 Rating 口径不可混用** —— 完美是 Rating 3.0（对齐 HLTV），5E 是自有口径
-2. **选手 ID 有三套命名空间** —— 完美主站 / nami 比赛接口 / HLTV，跨源必须按**选手名**关联
+2. **选手 ID 有两套命名空间** —— 完美主站（与 HLTV、5E 的 ID 相同）/ nami 比赛接口（赛事数据用的是它），
+   赛事数据与荣誉、对手强度之间必须按**选手名**关联
 3. **只有 2024/2025 两年**可验证；继续改进需先扩大样本（补采 2021-2023）
+4. **荣誉数据只覆盖进过 Top20 的选手** —— MVP/EVP 取自完美 career 接口，而采集名单是历年进过 HLTV Top20 的 99 人；其他人即使拿过荣誉也记为「无」（例如 kyousuke 的 IEM Cologne 2025 EVP、910 的 Austin Major 2025 EVP）。每个赛事也只保留 3 个 EVP。这会让回测的 Top20 重叠偏乐观；HLTV 对手强度同样只采了当年官方 Top20 的 20 人
+5. **现有 `data/if_sim_*_events.xlsx` 由旧版名次解析生成** —— 6 队淘汰赛的 5-6 名、有季军赛时的 3rd/4th 被记成了「小组淘汰」。`src/gen_if_data_2025.py` 已修正，需重新运行生成数据后才会生效（上面的回测数字基于现有数据）
 
 ---
 
