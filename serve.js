@@ -88,8 +88,10 @@ function serve(root, port) {
     }
 
     let filePath = path.join(root, urlPath);
-    // 防目录穿越
-    if (!filePath.startsWith(root)) {
+    // 防目录穿越：解析后必须仍在 root 之内
+    // （只用 startsWith(root) 会放过与 root 同名前缀的兄弟目录，如 dist-verify/）
+    const rel = path.relative(root, filePath);
+    if (rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel)) {
       res.writeHead(403);
       return res.end('Forbidden');
     }
@@ -117,16 +119,22 @@ function serve(root, port) {
     });
   });
 
-  return new Promise((resolve) => server.listen(port, '127.0.0.1', () => resolve(server)));
+  return new Promise((resolve, reject) => {
+    // 端口在探测后被抢占等错误交给 main().catch 统一提示，而不是抛未处理异常
+    server.once('error', reject);
+    server.listen(port, '127.0.0.1', () => resolve(server));
+  });
 }
 
 async function main() {
   const argv = process.argv.slice(2);
   const noOpen = argv.includes('--no-open');
-  const positional = argv.filter((a) => !a.startsWith('--'));
-  const wantPort = positional.length ? parseInt(positional[0], 10) : 8000;
-
   const rootIdx = argv.indexOf('--root');
+  // 位置参数是端口；--root 后面跟的目录不能被当成端口
+  const positional = argv.filter((a, i) => !a.startsWith('--') && !(rootIdx >= 0 && i === rootIdx + 1));
+  const parsedPort = positional.length ? parseInt(positional[0], 10) : NaN;
+  const wantPort = Number.isFinite(parsedPort) ? parsedPort : 8000;
+
   const root = path.resolve(rootIdx >= 0 && argv[rootIdx + 1] ? argv[rootIdx + 1] : DEFAULT_ROOT);
 
   if (!fs.existsSync(root)) {
@@ -142,7 +150,7 @@ async function main() {
     process.exit(1);
   }
 
-  const port = await pickPort(Number.isFinite(wantPort) ? wantPort : 8000);
+  const port = await pickPort(wantPort);
   const url = `http://localhost:${port}/`;
   await serve(root, port);
 

@@ -6,12 +6,14 @@
   2. 时间戳不缺失
   3. stability_metrics 输出合理（std 量级、trend 分布）
 """
+import os
 import sys
 import importlib.util
 import numpy as np
 
-sys.path.insert(0, r"D:\demo\iftv")
-spec = importlib.util.spec_from_file_location("g", r"D:\demo\iftv\gen_if_data_2025.py")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根 = .analysis/ 的上一级
+sys.path.insert(0, os.path.join(ROOT, "src"))
+spec = importlib.util.spec_from_file_location("g", os.path.join(ROOT, "src", "gen_if_data_2025.py"))
 g = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(g)
 

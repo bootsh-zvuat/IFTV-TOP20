@@ -38,11 +38,14 @@ if not exist "if-simulator\dist\index.html" (
   exit /b 1
 )
 
-rem ---- locate a usable Python ----
+rem ---- locate a usable Python (3.7+) ----
+rem  Run it instead of trusting "where": on Windows 10/11 without Python,
+rem  "where python" finds the Microsoft Store stub, which only prints an
+rem  install hint and exits, so the Node fallback below would never run.
 set "PY="
-where py >nul 2>nul && set "PY=py"
+py -c "import sys; sys.exit(sys.version_info < (3, 7))" >nul 2>nul && set "PY=py"
 if not defined PY (
-  where python >nul 2>nul && set "PY=python"
+  python -c "import sys; sys.exit(sys.version_info < (3, 7))" >nul 2>nul && set "PY=python"
 )
 if not defined PY (
   if exist "%LOCALAPPDATA%\Programs\Python\Python313\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python313\python.exe"
@@ -50,14 +53,11 @@ if not defined PY (
 if not defined PY (
   if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
 )
-if not defined PY (
-  if exist "E:\python\python.exe" set "PY=E:\python\python.exe"
-)
 
 if defined PY (
   echo   Using Python: !PY!
   echo.
-  !PY! "serve.py" %*
+  "!PY!" "serve.py" %*
   goto :done
 )
 

@@ -120,17 +120,24 @@ export async function exportAll(): Promise<string> {
 
 export async function importAll(json: string): Promise<void> {
   const data = JSON.parse(json);
+  // 存档是完整导出：先清空存档里包含的表再写入。直接 bulkPut 会和现有数据叠加——
+  // results 用自增 id，重新导入过 Excel 后 id 不同，同一条成绩会出现两份、分数翻倍
+  const restore = async <T, K>(table: Table<T, K>, rows: unknown) => {
+    if (!Array.isArray(rows)) return;
+    await table.clear();
+    await table.bulkPut(rows as T[]);
+  };
   await db.transaction(
     'rw',
     [db.players, db.events, db.results, db.scenarios, db.snapshots, db.baselines, db.weights],
     async () => {
-      if (data.players) await db.players.bulkPut(data.players);
-      if (data.events) await db.events.bulkPut(data.events);
-      if (data.results) await db.results.bulkPut(data.results);
-      if (data.scenarios) await db.scenarios.bulkPut(data.scenarios);
-      if (data.snapshots) await db.snapshots.bulkPut(data.snapshots);
-      if (data.baselines) await db.baselines.bulkPut(data.baselines);
-      if (data.weights) await db.weights.bulkPut(data.weights);
+      await restore(db.players, data.players);
+      await restore(db.events, data.events);
+      await restore(db.results, data.results);
+      await restore(db.scenarios, data.scenarios);
+      await restore(db.snapshots, data.snapshots);
+      await restore(db.baselines, data.baselines);
+      await restore(db.weights, data.weights);
     },
   );
 }

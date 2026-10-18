@@ -38,6 +38,19 @@ NO_CACHE = ("Cache-Control: no-store, no-cache, must-revalidate, max-age=0")
 class Handler(http.server.SimpleHTTPRequestHandler):
     """静态文件处理器：SPA 回退 + 正确 MIME + 禁缓存"""
 
+    # 显式指定 MIME：Python 在 Windows 上会从注册表读扩展名对应的类型，
+    # 注册表里 .js 被其他软件改成 text/plain 时，浏览器会拒绝执行模块脚本（页面白屏）
+    extensions_map = {
+        **http.server.SimpleHTTPRequestHandler.extensions_map,
+        ".html": "text/html",
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+        ".css": "text/css",
+        ".json": "application/json",
+        ".svg": "image/svg+xml",
+        ".wasm": "application/wasm",
+    }
+
     def __init__(self, *args, directory=None, **kwargs):
         super().__init__(*args, directory=directory, **kwargs)
 

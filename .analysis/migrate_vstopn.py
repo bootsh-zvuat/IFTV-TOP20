@@ -16,7 +16,7 @@ import shutil
 import openpyxl
 from openpyxl.styles import Font, PatternFill
 
-BASE = r"D:\demo\iftv"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根 = .analysis/ 的上一级
 DATA = os.path.join(BASE, "data")
 KEYS = ["vsTop5", "vsTop10", "vsTop20", "vsTop30", "vsTop50"]
 

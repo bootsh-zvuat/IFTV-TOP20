@@ -14,7 +14,7 @@
   data/if_sim_2025_events.xlsx    （模拟器"导入赛事数据"）
   data/if_sim_2025_baseline.xlsx  （模拟器"导入 HLTV 原版 Top20"）
 
-运行：.venv\\Scripts\\python.exe gen_if_data_2025.py [--year 2024]
+运行：.venv\\Scripts\\python.exe src\\gen_if_data_2025.py [--year 2024]
 """
 import argparse
 import datetime
@@ -94,14 +94,30 @@ def classify_level(name):
 
 
 def rank_to_placement(rank_text):
+    """prizeList 名次文本 → 名次档，按该档的最好名次归类：
+    1st→冠军，2nd→亚军，3rd / 4th / 3-4th→四强，5-6th / 7-8th / 5-8th→八强，其余→小组淘汰。
+
+    旧版只认 "1st / 2nd / 3-4 / 5-8" 四种写法：IEM 等 6 队淘汰赛的 5-6 名、
+    有季军赛的 3rd / 4th 都被当成了小组淘汰（−1 分）。
+    """
     t = (rank_text or "").strip()
-    if re.match(r"^1st$", t, re.I):
+    if "冠军" in t:
         return "冠军"
-    if re.match(r"^2nd$", t, re.I):
+    if "亚军" in t:
         return "亚军"
-    if re.match(r"^3-4", t, re.I):
+    if "季军" in t or "殿军" in t:
         return "四强"
-    if re.match(r"^5-8", t, re.I):
+    m = re.match(r"\D*(\d+)", t)
+    if not m:
+        return "小组淘汰"
+    best = int(m.group(1))
+    if best == 1:
+        return "冠军"
+    if best == 2:
+        return "亚军"
+    if best <= 4:
+        return "四强"
+    if best <= 8:
         return "八强"
     return "小组淘汰"
 
@@ -152,7 +168,10 @@ def discover_events():
         try:
             # 用防封禁版：长扫描遇到 IP 临时封禁时静默跳过会丢赛事
             r = wm_get_safe("/event/getEventDetail", {"eventId": eid})
-        except Exception:
+        except Exception as e:
+            # 不存在的 id 会直接报错，照常静默跳过；封禁重试用尽则必须提示，否则会悄悄丢赛事
+            if "多次重试仍失败" in str(e):
+                log(f"  ! id={eid} 多次重试仍失败，已跳过（该赛事可能丢失）")
             time.sleep(SLEEP)
             continue
         ed = r.get("eventDetail") or {}
@@ -192,16 +211,19 @@ def fetch_event_matches(eid):
 def aggregate_player_stats(matches):
     """逐 match 调 getMatchPlayerStats，聚合 (playerId -> 加权统计)。
 
-    返回 stats: {playerId: {kills, rounds, adr_w, rating_w, kast_w, maps,
+    返回 stats: {playerId: {kills, rounds, adr_w, rating_w, kast_w,
+                            adr_rounds, rating_rounds, kast_rounds, maps,
                             name, teams:{teamId:maps},
                             series:[(date_ms, rating, rounds), ...]}}
+    *_w 为按回合加权的和，*_rounds 为对应指标有值的回合数（缺失的图不进分母）。
 
     series 保留**逐图时间序列**（比赛 startTime + 图序号），用于构造"稳定性"信号。
     中段（官方 7-20 名）复现的主要瓶颈是缺少"全年聚合稳定性"维度，
     而逐图 rating 的波动正是该维度的直接代理 —— 聚合时若丢弃时间维度就无法恢复。
     """
     stats = defaultdict(lambda: dict(kills=0, rounds=0, adr_w=0.0, rating_w=0.0,
-                                     kast_w=0.0, maps=0, name="", teams=defaultdict(int),
+                                     kast_w=0.0, adr_rounds=0, rating_rounds=0,
+                                     kast_rounds=0, maps=0, name="", teams=defaultdict(int),
                                      series=[]))
     # 三套战队 ID 命名空间：
     #   stats 里的 p.teamId（nami 内部 id）≠ match 的 team1Id/team2Id（HLTV id）
@@ -218,7 +240,8 @@ def aggregate_player_stats(matches):
             continue
         try:
             maps = wm_get_safe("/match/getMatchPlayerStats", {"namiId": nami}) or []
-        except Exception:
+        except Exception as e:
+            log(f"  ! 比赛 namiId={nami} 取数失败，已跳过: {e}")
             time.sleep(SLEEP)
             continue
         n_calls += 1
@@ -247,9 +270,11 @@ def aggregate_player_stats(matches):
                     s["rounds"] += rounds
                     s["maps"] += 1
                     r = p.get("rating")
-                    s["adr_w"] += (p.get("adr") or 0) * rounds
-                    s["rating_w"] += (r or 0) * rounds
-                    s["kast_w"] += (p.get("kast") or 0) * rounds
+                    # 缺失的指标不进该指标的分母，否则没有 rating 的图会把平均值往 0 拉
+                    for key, v in (("adr", p.get("adr")), ("rating", r), ("kast", p.get("kast"))):
+                        if v is not None:
+                            s[f"{key}_w"] += float(v) * rounds
+                            s[f"{key}_rounds"] += rounds
                     # 逐图时间序列：保留 (时间锚点, 图序, rating, 回合数)
                     if r is not None:
                         s["series"].append((match_ts, box, float(r), rounds))
@@ -321,12 +346,13 @@ def load_career_honors():
         date = str(d.get("日期") or "")
         if not date.startswith(str(YEAR)):
             continue
-        ev = (d.get("赛事名") or "").strip()
+        # str()：采集 Excel 可能把纯数字的名字存成数字（如选手 "910"）
+        ev = str(d.get("赛事名") or "").strip()
         if not ev:
             continue
         key = norm_name(ev)
         pid = d.get("选手ID")
-        name = (d.get("选手") or "").strip()
+        name = str(d.get("选手") or "").strip()
         t = d.get("类型")
         if t == 1:
             honors[key]["mvp"] = (pid, name)
@@ -341,7 +367,10 @@ def match_honor(honors, event_name, event_name_zh):
     k1 = norm_name(event_name)
     k2 = norm_name(event_name_zh)
     for key, h in honors.items():
-        if key and (key in k1 or k1 in key or (k2 and (key in k2 or k2 in key))):
+        if not key:
+            continue
+        # k1 / k2 为空时不能参与比较：空串是任何字符串的子串，会匹配到任意赛事
+        if (k1 and (key in k1 or k1 in key)) or (k2 and (key in k2 or k2 in key)):
             return h
     return None
 
@@ -386,9 +415,9 @@ def load_hltv_opponent(year):
     该文件由 fetch_hltv_opponents.py 通过 Edge CDP 采集（HLTV 有 CF 保护，
     纯 HTTP 拿不到）。缺失时返回空 dict，导出仍可正常进行。
 
-    重要：必须按**选手名** join。HLTV 的选手ID 与完美/5E 的命名空间不同
-    （例如 ZywOo 在完美主站是 11893、在 nami 比赛接口是 10340，
-    而赛事数据里的选手ID 又是 nami 口径），按 ID join 会错配。
+    重要：必须按**选手名** join。赛事数据里的选手ID 是 nami 比赛接口的口径
+    （例如 ZywOo 是 10340），而 HLTV 选手页用的是 HLTV ID（ZywOo 是 11893，
+    与完美主站、5E 的 ID 相同），两者直接按 ID join 会错配。
     """
     path = os.path.join(BASE, "data", f"hltv_opponent_{year}.xlsx")
     if not os.path.exists(path):
@@ -485,7 +514,7 @@ def main():
         # EVP 顺位：按本赛事 Rating 降序取前 3
         def ev_rating(pid):
             s = stats.get(pid)
-            return (s["rating_w"] / s["rounds"]) if s and s["rounds"] else 0
+            return (s["rating_w"] / s["rating_rounds"]) if s and s["rating_rounds"] else 0
         evp_pids = sorted(evp_pids, key=ev_rating, reverse=True)[:3]
         if mvp_pid:
             log(f"  MVP={stats[mvp_pid]['name']} EVP={[stats[p]['name'] for p in evp_pids]}")
@@ -500,8 +529,8 @@ def main():
             tid = max(s["teams"].items(), key=lambda x: x[1])[0] if s["teams"] else None
             team = team_names.get(tid, "")
             place = team_place.get(tid, "小组淘汰")
-            rating = round(s["rating_w"] / s["rounds"], 2)
-            adr = round(s["adr_w"] / s["rounds"], 1)
+            rating = round(s["rating_w"] / s["rating_rounds"], 2) if s["rating_rounds"] else 0.0
+            adr = round(s["adr_w"] / s["adr_rounds"], 1) if s["adr_rounds"] else 0.0
             kpr = round(s["kills"] / s["rounds"], 2)
             if pid == mvp_pid:
                 honor, hrank = "MVP", 1

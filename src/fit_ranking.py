@@ -15,7 +15,7 @@ HLTV Top20 排名逻辑参数拟合（可解释、可复现）
   Sec   = w1*z(首杀/图) + w2*z(多杀/图) + w3*z(残局/图)
   mult(等级): Major=m_major, IEM卡托/科隆=m_super, 其他=1.0
 
-运行：.venv\\Scripts\\python.exe fit_ranking.py
+运行：.venv\\Scripts\\python.exe src\\fit_ranking.py
 输出：控制台结果 + fitted_params.json（拟合参数与验证指标）
 """
 import os

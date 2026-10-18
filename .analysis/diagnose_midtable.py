@@ -13,7 +13,7 @@ from collections import defaultdict
 import openpyxl
 import numpy as np
 
-BASE = r"D:\demo\iftv"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根 = .analysis/ 的上一级
 DATA = os.path.join(BASE, "data")
 
 # ---------- 模拟器 v1.2.0 默认权重（来自 config/defaults.ts） ----------

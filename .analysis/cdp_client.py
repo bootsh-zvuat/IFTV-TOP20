@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-鐢?Edge 鍐呯疆 CDP 椹卞姩鐪熷疄娴忚鍣ㄦ姄鍙?HLTV 閫夋墜椤碉紙闆剁涓夋柟渚濊禆锛夈€?
-鍘熺悊锛?  Edge 鍩轰簬 Chromium锛屾敮鎸?--remote-debugging-port銆?  閫氳繃 CDP锛圕hrome DevTools Protocol锛夊彲浠ワ細
-    1. 鎵撳紑鐪熷疄绐楀彛锛堥潪 headless锛夆€斺€?鐪熷疄娴忚鍣ㄨ兘姝ｅ父閫氳繃 Cloudflare JS 鎸戞垬
-    2. Runtime.evaluate 璇诲彇娓叉煋鍚庣殑 DOM
-    3. 閫愪釜閫夋墜瀵艰埅 + 鍙栨枃鏈?+ 淇濆瓨 HTML
+用 Edge 内置 CDP 驱动真实浏览器抓取 HLTV 选手页（零第三方依赖）。
 
-涓嶇粫杩囦换浣曚繚鎶わ細鐢辩湡瀹?Edge 鑷瀹屾垚鎸戞垬锛岃剼鏈彧鏄?鑷姩鐐瑰紑椤甸潰骞惰缁撴灉"銆?
-渚濊禆锛氫粎鏍囧噯搴擄紙鎵嬪啓 WebSocket 鎻℃墜涓庡抚瑙ｆ瀽锛夈€?"""
+原理：
+  Edge 基于 Chromium，支持 --remote-debugging-port。
+  通过 CDP（Chrome DevTools Protocol）可以：
+    1. 打开真实窗口（非 headless）—— 真实浏览器能正常通过 Cloudflare JS 挑战
+    2. Runtime.evaluate 读取渲染后的 DOM
+    3. 逐个选手导航 + 取文本 + 保存 HTML
+
+由真实 Edge 自行完成 Cloudflare 挑战，脚本只负责自动打开页面并读取结果。
+
+依赖：仅标准库（手写 WebSocket 握手与帧解析）。
+"""
 import base64
 import hashlib
 import json
@@ -25,7 +30,7 @@ EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 PORT = 9411
 
 
-# ---------------- 鏋佺畝 WebSocket 瀹㈡埛绔紙RFC6455锛屼粎瀹㈡埛绔枃鏈抚锛?----------------
+# ---------------- 极简 WebSocket 客户端（RFC6455，仅客户端文本帧） ----------------
 class WS:
     def __init__(self, url, timeout=20):
         m = re.match(r"ws://([^:/]+):(\d+)(/.*)", url)
@@ -86,7 +91,7 @@ class WS:
         data = self._recv_exact(ln)
         if opcode == 0x8:
             raise ConnectionError("ws closed by peer")
-        if opcode == 0x9:  # ping -> 鍥?pong
+        if opcode == 0x9:  # ping：直接忽略，不回 pong
             return None
         return data.decode("utf-8", "ignore")
 
@@ -103,7 +108,7 @@ class WS:
                 continue
             if obj.get("id") == msg_id:
                 return obj
-        raise TimeoutError(f"CDP {method} 瓒呮椂")
+        raise TimeoutError(f"CDP {method} 超时")
 
     def close(self):
         try:

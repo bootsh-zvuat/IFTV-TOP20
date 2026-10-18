@@ -12,7 +12,7 @@ HLTV 手动导出页解析器 —— 把浏览器另存的 HTML 转为 If 模拟
        https://www.hltv.org/stats/players/11893/ZywOo?startDate=2025-01-01&endDate=2025-12-31
      （startDate/endDate 让页面只统计该年）→ 另存为 .html
   2. 把所有选手的 HTML 放进一个目录，例如 data/hltv_html/2025/
-  3. 运行：.venv\\Scripts\\python.exe parse_hltv_html.py --html-dir data/hltv_html/2025 \\
+  3. 运行：.venv\\Scripts\\python.exe src\\parse_hltv_html.py --html-dir data/hltv_html/2025 \\
              --year 2025 --out data/hltv_opponent_2025.xlsx
 
 输出列：年份 / 选手 / 地图数 / Rating / K-D差 / K/D / vsTop5 / vsTop10 / vsTop20 /
